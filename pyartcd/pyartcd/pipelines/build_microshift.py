@@ -37,7 +37,7 @@ yaml.width = 4096
 
 
 class BuildMicroShiftPipeline:
-    """ Rebase and build MicroShift for an assembly """
+    """ Rebase and build MicroShift for an assembly test"""
 
     SUPPORTED_ASSEMBLY_TYPES = {AssemblyTypes.STANDARD, AssemblyTypes.CANDIDATE, AssemblyTypes.PREVIEW, AssemblyTypes.STREAM, AssemblyTypes.CUSTOM}
 
