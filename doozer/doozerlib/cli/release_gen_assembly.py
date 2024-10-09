@@ -201,6 +201,10 @@ class GenAssemblyCli:
             if "-" not in self.gen_assembly_name:
                 self._exit_with_error(f"Invalid assembly name: {self.gen_assembly_name}. Has to include release field. Eg: 4.18.0-0")
 
+        if self.assembly_type in ['AssemblyTypes.CANDITADE', 'AssemblyTypes.PREVIEW'] and self.includes_release_version is True:
+            if "-0" not in self.gen_assembly_name:
+                self._exit_with_error(f"Invalid assembly name: {self.gen_assembly_name}. Has to include release field. Eg: 0.rc.3 / 0.ec.3")
+
     def _get_release_pullspecs(self):
         for nightly_name in self.nightlies:
             major_minor, brew_cpu_arch, priv = util.isolate_nightly_name_components(nightly_name)
