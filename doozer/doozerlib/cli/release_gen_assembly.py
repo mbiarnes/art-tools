@@ -151,7 +151,8 @@ class GenAssemblyCli:
         self.assembly_type = util.infer_assembly_type(self.custom, self.gen_assembly_name)
 
         # Check if OCP should have the new release version (i.e. 4.18.5-0)
-        self.includes_release_version = self.runtime.group_config.new_payload_versioning_scheme
+        #self.includes_release_version = self.runtime.group_config.new_payload_versioning_scheme
+        self.includes_release_version = getattr(self.runtime.group_config, 'new_payload_versioning_scheme', None)
 
         # Create a map of package_name to RPMMetadata
         self.package_rpm_meta: Dict[str, RPMMetadata] = \
