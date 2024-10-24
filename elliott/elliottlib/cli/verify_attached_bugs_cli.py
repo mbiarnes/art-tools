@@ -480,6 +480,7 @@ class BugValidator:
                             f"<{blocker.weburl}|{blocker.id}> which was CLOSED `{blocker.resolution}`"
                     self._complain(message)
                 if is_attached and blocker.status in ['ON_QA', 'Verified', 'VERIFIED']:
+                    blocker_advisories = None
                     try:
                         blocker_advisories = blocker.all_advisory_ids()
                     except ErrataException:
