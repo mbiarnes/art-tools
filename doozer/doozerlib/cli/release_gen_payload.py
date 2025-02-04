@@ -156,11 +156,13 @@ def default_imagestream_base_name(version: str) -> str:
 
 def assembly_imagestream_base_name(runtime: Runtime) -> str:
     version = runtime.get_minor_version()
-    if runtime.assembly == 'stream' and runtime.assembly_type is AssemblyTypes.STREAM:
-        return default_imagestream_base_name(version)
-    else:
-        return f"{version}-art-assembly-{runtime.assembly}"
+    return assembly_imagestream_base_name_generic(version, runtime.assembly, runtime.assembly_type)
 
+def assembly_imagestream_base_name_generic(minor_version, assembly_name, assembly_type):
+    if assembly_name == 'stream' and assembly_type is AssemblyTypes.STREAM:
+        return default_imagestream_base_name(minor_version)
+    else:
+        return f"{minor_version}-art-assembly-{assembly_name}"
 
 def default_imagestream_namespace_base_name() -> str:
     return "ocp"

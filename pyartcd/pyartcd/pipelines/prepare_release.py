@@ -21,7 +21,7 @@ from datetime import datetime, timedelta, timezone
 from artcommonlib.assembly import AssemblyTypes, assembly_group_config
 from artcommonlib.model import Model
 from artcommonlib.util import get_assembly_release_date, new_roundtrip_yaml_handler
-from doozerlib.cli.release_gen_payload import assembly_imagestream_base_name, default_imagestream_namespace_base_name, payload_imagestream_namespace_and_name
+from doozerlib.cli.release_gen_payload import assembly_imagestream_base_name_generic, default_imagestream_namespace_base_name, payload_imagestream_namespace_and_name
 from elliottlib.errata import set_blocking_advisory, get_blocking_advisories, push_cdn_stage, is_advisory_editable
 from elliottlib.errata_async import AsyncErrataAPI
 from elliottlib.errata import set_blocking_advisory, get_blocking_advisories
@@ -294,9 +294,9 @@ class PrepareReleasePipeline:
                 if self.advance_release or self.pre_release:
                     _LOGGER.info("Skipping populating metadata advisory since advance/pre-release detected")
                     continue
-                await self.build_and_attach_bundles(advisory)
-            elif impetus in ["advance", "prerelease"]:
-                await self.build_and_attach_bundles(advisory)
+                # await self.build_and_attach_bundles(advisory)
+            # elif impetus in ["advance", "prerelease"]:
+                # await self.build_and_attach_bundles(advisory)
             else:
                 # Skip populating microshift advisory since that is done later after promote
                 if impetus == "microshift":
@@ -348,7 +348,7 @@ class PrepareReleasePipeline:
             _LOGGER.info("Don't verify payloads for OCP3 releases")
         else:
             _LOGGER.info("Verify the swept builds match the imagestreams that were updated during build-sync...")
-            assembly_is_base_name = assembly_imagestream_base_name(self.runtime)
+            assembly_is_base_name = assembly_imagestream_base_name_generic(self.release_version[0], self.assembly, assembly_type)
             arches = group_config.get("arches", [])
             imagestreams_per_arch = [
                 payload_imagestream_namespace_and_name(default_imagestream_namespace_base_name(),
