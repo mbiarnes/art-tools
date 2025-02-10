@@ -348,7 +348,11 @@ class PrepareReleasePipeline:
             _LOGGER.info("Don't verify payloads for OCP3 releases")
         else:
             _LOGGER.info("Verify the swept builds match the imagestreams that were updated during build-sync...")
-            assembly_is_base_name = assembly_imagestream_base_name_generic(self.release_version[0], self.assembly, assembly_type)
+            self.image_stream_x_value = self.release_version[0]
+            self.image_stream_y_value = self.release_version[1]
+            self.image_stream_version = f'{self.image_stream_x_value}.{self.image_stream_y_value}'
+
+            assembly_is_base_name = assembly_imagestream_base_name_generic(self.image_stream_version, self.assembly, assembly_type)
             arches = group_config.get("arches", [])
             imagestreams_per_arch = [
                 payload_imagestream_namespace_and_name(default_imagestream_namespace_base_name(),
