@@ -294,9 +294,9 @@ class PrepareReleasePipeline:
                 if self.advance_release or self.pre_release:
                     _LOGGER.info("Skipping populating metadata advisory since advance/pre-release detected")
                     continue
-                await self.build_and_attach_bundles(advisory)
-            elif impetus in ["advance", "prerelease"]:
-                await self.build_and_attach_bundles(advisory)
+                # await self.build_and_attach_bundles(advisory)
+            # elif impetus in ["advance", "prerelease"]:
+                # await self.build_and_attach_bundles(advisory)
             else:
                 # Skip populating microshift advisory since that is done later after promote
                 if impetus == "microshift":
