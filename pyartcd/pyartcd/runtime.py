@@ -99,8 +99,10 @@ class GroupRuntime(runtime.GroupRuntime):
             config: Dict[str, Any], working_dir: Path,
             group: str, assembly: str = "test",
             doozer_data_path: str = constants.OCP_BUILD_DATA_URL,
-            doozer_data_gitref: str = ''):
+            doozer_data_gitref: str = '',
+            build_system: str = 'brew'):
 
+        self.build_system = build_system
         self.config = config
         self.working_dir = working_dir
         self.group = group
