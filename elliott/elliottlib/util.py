@@ -564,3 +564,17 @@ async def get_nvrs_from_release(pullspec_or_imagestream, rhcos_images, logger=No
         r = labels['release']
         all_payload_nvrs[component] = (v, r)
     return all_payload_nvrs
+
+
+def fix_summary_suffix(summary, summary_suffix):
+    # get summary of CVE tracker bug and update summary if needed
+    if '[' in summary and ']' in summary:
+        # Replace the first [..] with summary_prefix
+        start = summary.find('[')
+        end = summary.find(']', start)
+        new_s = summary[:start] + summary_suffix + summary[end + 1:]
+    else:
+        # just append summary_suffix
+        new_s = summary + ' ' + summary_suffix
+
+    return new_s
