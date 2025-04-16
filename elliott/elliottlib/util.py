@@ -564,3 +564,21 @@ async def get_nvrs_from_release(pullspec_or_imagestream, rhcos_images, logger=No
         r = labels['release']
         all_payload_nvrs[component] = (v, r)
     return all_payload_nvrs
+
+
+def fix_summary_suffix(major_version, minor_version, bug_summary):
+    # get summary of CVE tracker bug and update summary if needed
+    summary_suffix = f"[openshift-{major_version}.{minor_version}]"
+    if summary_suffix in bug_summary: #Already good
+        return bug_summary
+
+    if '[' in bug_summary and ']' in bug_summary:
+        # Replace the first [..] with summary_prefix
+        start = bug_summary.find('[')
+        end = bug_summary.find(']', start)
+        new_s = bug_summary[:start] + summary_suffix + bug_summary[end + 1:]
+    else:
+        # just append summary_suffix
+        new_s = bug_summary + ' ' + summary_suffix
+
+    return new_s

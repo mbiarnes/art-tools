@@ -13,7 +13,7 @@ from elliottlib import (Runtime, bzutil, constants, errata)
 from elliottlib.cli import common
 from elliottlib.cli.common import click_coroutine
 from elliottlib.exceptions import ElliottFatalError
-from elliottlib.util import chunk
+from elliottlib.util import chunk, fix_summary_suffix
 
 
 logger = logutil.get_logger(__name__)
@@ -133,6 +133,7 @@ advisory with the --add option.
 
     runtime.initialize(mode="both")
     major_version, _ = runtime.get_major_minor()
+    _, minor_version = runtime.get_major_minor()
     find_bugs_obj = FindBugsSweep(cve_only=cve_only)
     find_bugs_obj.include_status(include_status)
     find_bugs_obj.exclude_status(exclude_status)
@@ -141,7 +142,7 @@ advisory with the --add option.
     errors = []
     for b in [runtime.get_bug_tracker('jira'), runtime.get_bug_tracker('bugzilla')]:
         try:
-            bugs.extend(await find_and_attach_bugs(runtime, advisory_id, default_advisory_type, major_version, find_bugs_obj,
+            bugs.extend(await find_and_attach_bugs(runtime, advisory_id, default_advisory_type, major_version, minor_version, find_bugs_obj,
                         output, brew_event,
                         noop=noop, permissive=permissive,
                         count_advisory_attach_flags=count_advisory_attach_flags,
@@ -224,7 +225,7 @@ async def get_bugs_sweep(runtime: Runtime, find_bugs_obj, brew_event, bug_tracke
     return bugs
 
 
-async def find_and_attach_bugs(runtime: Runtime, advisory_id, default_advisory_type, major_version,
+async def find_and_attach_bugs(runtime: Runtime, advisory_id, default_advisory_type, major_version, minor_version,
                                find_bugs_obj, output, brew_event, noop, permissive, count_advisory_attach_flags,
                                bug_tracker, operator_bundle_advisory):
     if output == 'text':
@@ -242,6 +243,7 @@ async def find_and_attach_bugs(runtime: Runtime, advisory_id, default_advisory_t
     bugs_by_type, _ = categorize_bugs_by_type(bugs, advisory_ids, included_bug_ids,
                                               permissive=permissive,
                                               major_version=major_version,
+                                              minor_version=minor_version,
                                               operator_bundle_advisory=operator_bundle_advisory)
     for kind, kind_bugs in bugs_by_type.items():
         logger.info(f'{kind} bugs: {[b.id for b in kind_bugs]}')
@@ -288,7 +290,7 @@ def get_assembly_bug_ids(runtime, bug_tracker_type):
 
 def categorize_bugs_by_type(bugs: List[Bug], advisory_id_map: Dict[str, int],
                             permitted_bug_ids, operator_bundle_advisory: str = "metadata",
-                            permissive=False, major_version: int = 4):
+                            permissive=False, major_version: int = 4, minor_version: int = 0, summary=None):
 
     """ Categorize bugs into different types of advisories
     :return: (bugs_by_type, issues) where bugs_by_type is a dict of {advisory_type: bugs} and issues is a list of issues
@@ -370,6 +372,11 @@ def categorize_bugs_by_type(bugs: List[Bug], advisory_id_map: Dict[str, int],
             exception_packages.append(constants.GOLANG_BUILDER_CVE_COMPONENT)
 
         for bug in tracker_bugs:
+            # get summary of tracker-bug and update it if needed
+            summary_suffix = f"[openshift-{major_version}.{minor_version}]"
+            if not bug.summary.endswith(summary_suffix):
+                new_s = fix_summary_suffix(major_version, minor_version, bug.summary)
+
             package_name = bug.whiteboard_component
             if kind == "microshift" and package_name == "microshift" and len(packages) == 0:
                 # microshift is special since it has a separate advisory, and it's build is attached

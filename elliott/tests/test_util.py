@@ -117,6 +117,21 @@ class TestUtil(unittest.TestCase):
         actual = util.get_golang_container_nvrs(nvrs, None)
         self.assertEqual(expected, actual)
 
+    def test_suffix_replacement(self):
+        # This summary has a different suffix, but ends with one
+        result = util.fix_summary_suffix(4, 18, "Some bug summary [old-stuff]")
+        self.assertEqual(result, "Some bug summary [openshift-4.18]")
+
+    def test_suffix_no_change_needed(self):
+        # Already ends with the correct suffix
+        result = util.fix_summary_suffix(4, 18, "Bug is fine [openshift-4.18]")
+        self.assertEqual(result, "Bug is fine [openshift-4.18]")
+
+    def test_suffix_append(self):
+        # Already ends with the correct suffix
+        result = util.fix_summary_suffix(4, 18, "Append here")
+        self.assertEqual(result, "Append here [openshift-4.18]")
+
 
 if __name__ == '__main__':
     unittest.main()
