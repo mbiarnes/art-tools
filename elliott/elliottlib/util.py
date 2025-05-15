@@ -13,7 +13,6 @@ import click
 import yaml
 from artcommonlib import exectools
 from artcommonlib.format_util import green_prefix, green_print, red_prefix
-from artcommonlib.logutil import get_logger
 from errata_tool import Erratum
 
 from elliottlib import brew
@@ -25,7 +24,6 @@ from elliottlib.exceptions import BrewBuildException
 default_release_date = datetime.datetime(1970, 1, 1, 0, 0)
 now = datetime.datetime.now()
 YMD = '%Y-%b-%d'
-LOGGER = get_logger(__name__)
 
 
 def exit_unauthenticated():
@@ -564,21 +562,6 @@ async def get_nvrs_from_release(pullspec_or_imagestream, rhcos_images, logger=No
         r = labels['release']
         all_payload_nvrs[component] = (v, r)
     return all_payload_nvrs
-
-
-def fix_summary_suffix(summary, summary_suffix):
-    # Regex to match [openshift*]at the end of the string
-    version_pattern = r"\[openshift[^\]]*\]$"
-    if re.search(version_pattern, summary):
-        # Replace the existing version suffix with the new one
-        new_s = re.sub(version_pattern, summary_suffix, summary)
-        LOGGER.info("new summary after replacement: %s", new_s)
-    else:
-        # No version suffix, append the new one
-        new_s = f"{summary} {summary_suffix}"
-        LOGGER.info("new summary with addition of summary-suffix: %s", new_s)
-
-    return new_s
 
 
 def get_common_advisory_template(runtime):
