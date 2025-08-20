@@ -434,7 +434,7 @@ fi
         dg: RPMDistGitRepo = rpm.distgit_repo()
         logger = rpm.logger
         logger.info("Building %s against target %s", rpm.name, target)
-        cmd = ["rhpkg", "build", "--nowait", "--target", target]
+        cmd = ["rhpkg", "build", "--nowait", "--skip-nrv-check", "--target", target]
         if self._scratch:
             cmd.append("--skip-tag")
         if not self._dry_run:
