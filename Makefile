@@ -15,8 +15,7 @@ venv:
 
 format-check:
 	uv run -m ruff check --select I --output-format concise --config ruff.toml
-	uv run -m ruff format --config ruff.toml
-	git diff --exit-code
+	uv run -m ruff format --check --config ruff.toml
 
 format:
 	uv run -m ruff check --select I --fix --config ruff.toml
