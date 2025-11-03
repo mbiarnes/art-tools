@@ -190,9 +190,20 @@ class LockManager(Aioredlock):
         try:
             await super().unlock(lock)
             self.logger.info('Lock released')
-        except LockError:
-            self.logger.error('Failed releasing lock %s', lock.resource)
-            raise
+        except LockError as e:
+            # Check if it's a connection error - these can happen if the Redis connection
+            # was closed or reset during long-running operations
+            error_msg = str(e)
+            if "ConnectionResetError" in error_msg or "Connection reset" in error_msg:
+                self.logger.warning(
+                    'Failed releasing lock %s due to connection error: %s. Lock will auto-expire after timeout.',
+                    lock.resource,
+                    error_msg,
+                )
+                # Don't re-raise connection errors - the lock will expire automatically
+            else:
+                self.logger.error('Failed releasing lock %s: %s', lock.resource, error_msg)
+                raise
 
     async def get_lock_id(self, resource) -> str:
         self.logger.debug('Retrieving identifier for lock %s', resource)
@@ -257,6 +268,7 @@ async def run_with_lock(coro: coroutine, lock: Lock, lock_name: str, lock_id: st
     """
 
     lock_manager = LockManager.from_lock(lock)
+    lock_obj = None
 
     try:
         if skip_if_locked and await lock_manager.is_locked(lock_name):
@@ -268,7 +280,16 @@ async def run_with_lock(coro: coroutine, lock: Lock, lock_name: str, lock_id: st
             coro.close()
             return
 
-        async with await lock_manager.lock(resource=lock_name, lock_identifier=lock_id):
+        # Acquire lock and store reference
+        lock_obj = await lock_manager.lock(resource=lock_name, lock_identifier=lock_id)
+        try:
             return await coro
+        finally:
+            # Explicitly unlock before destroying the lock manager
+            # This prevents race conditions where destroy() closes connections
+            # before the unlock operation completes
+            if lock_obj:
+                await lock_manager.unlock(lock_obj)
     finally:
+        # Destroy must happen after unlock is complete to avoid connection reset errors
         await lock_manager.destroy()
