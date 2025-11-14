@@ -800,7 +800,9 @@ class GenAssemblyCli:
         if self.assembly_type not in [AssemblyTypes.PREVIEW, AssemblyTypes.CANDIDATE]:
             # For standalone assembly, if the advisories and jira already exist, reuse them
             if self.gen_assembly_name in self.releases_config.releases:
-                advisories = self.releases_config.releases[self.gen_assembly_name].assembly.group.advisories.primitive()
+                existing_advisories = self.releases_config.releases[self.gen_assembly_name].assembly.group.advisories
+                if existing_advisories:
+                    advisories = existing_advisories.primitive()
                 release_jira = self.releases_config.releases[self.gen_assembly_name].assembly.group.release_jira
             return advisories, release_jira
 
@@ -828,14 +830,15 @@ class GenAssemblyCli:
                 return advisories, release_jira
 
         previous_group = self.releases_config.releases[previous_assembly].assembly.group
-        previous_advisories = previous_group.advisories.primitive()
+        if previous_group.advisories:
+            previous_advisories = previous_group.advisories.primitive()
 
-        # preGA advisories (prerelease) associated with an assembly should not be reused
-        # they should be shipped or dropped if not shipping
-        for key in preGA_advisory_type:
-            previous_advisories.pop(key, None)
+            # preGA advisories (prerelease) associated with an assembly should not be reused
+            # they should be shipped or dropped if not shipping
+            for key in preGA_advisory_type:
+                previous_advisories.pop(key, None)
 
-        advisories.update(previous_advisories)
+            advisories.update(previous_advisories)
 
         release_jira = previous_group.release_jira
         self.logger.info(
@@ -1039,7 +1042,11 @@ class GenAssemblyCli:
             # If shipment advisories already exist, reuse them
             if self.gen_assembly_name in self.releases_config.releases:
                 release = self.releases_config.releases[self.gen_assembly_name]
-                previous_advisories = {ad["kind"]: ad for ad in release.assembly.group.shipment.advisories.primitive()}
+                previous_advisories = {}
+                if release.assembly.group.shipment.advisories:
+                    previous_advisories = {
+                        ad["kind"]: ad for ad in release.assembly.group.shipment.advisories.primitive()
+                    }
                 if previous_advisories:
                     for advisory in advisories:
                         # preGA advisories (prerelease) associated with an assembly should not be reused
