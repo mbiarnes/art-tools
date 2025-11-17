@@ -898,7 +898,7 @@ class KonfluxDb:
 
             # Add completed_before filter if specified
             if completed_before:
-                where_clauses.append(Column('start_time', DateTime) < completed_before)
+                where_clauses.append(Column('end_time', DateTime) < completed_before)
 
             try:
                 self.logger.debug(
