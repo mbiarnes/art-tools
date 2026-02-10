@@ -763,6 +763,13 @@ class KonfluxClient:
         # https://konflux.pages.redhat.com/docs/users/how-tos/configuring/overriding-compute-resources.html
         # ose-installer-artifacts fails with OOM with default values, hence bumping memory limit
         task_run_specs = []
+        syft_memory_request = "5Gi"
+        syft_memory_limit = "10Gi"
+
+        # microshift fails in needs more memory for SBOM generation, hence bumping memory limit
+        if component_name in ["microshift", "microshift-bootc"]:
+            syft_memory_request = "8Gi"
+            syft_memory_limit = "16Gi"
         if has_build_images_task:
             task_run_specs += [
                 {
@@ -772,10 +779,10 @@ class KonfluxClient:
                             "name": "sbom-syft-generate",
                             "computeResources": {
                                 "requests": {
-                                    "memory": "5Gi",
+                                    "memory": syft_memory_request,
                                 },
                                 "limits": {
-                                    "memory": "10Gi",
+                                    "memory": syft_memory_limit,
                                 },
                             },
                         }
