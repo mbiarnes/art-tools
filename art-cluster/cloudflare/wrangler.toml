@@ -8,5 +8,11 @@ workers_dev = true
 # Bind an R2 Bucket. Use R2 to store arbitrarily large blobs of data, such as files.
 # Docs: https://developers.cloudflare.com/r2/api/workers/workers-api-usage/
 r2_buckets  = [
-    { binding = "BUCKET_bucketname", bucket_name = "lgarciaac-bucket", preview_bucket_name = "lgarciaac-bucket" }
+    { binding = "BUCKET_bucketname", bucket_name = "art-srv-enterprise", preview_bucket_name = "art-srv-enterprise" }
+]
+
+# Custom domain configuration for mirror3.openshift.com
+# Routes are defined here for the production deployment
+routes = [
+    { pattern = "mirror3.openshift.com/*", zone_name = "mirror3.openshift.com" }
 ]
